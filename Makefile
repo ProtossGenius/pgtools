@@ -1,6 +1,6 @@
 ##Tail
 prebuild:
-
+	smdcatalog
 debug:
 
 qrun:
