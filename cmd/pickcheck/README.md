@@ -9,6 +9,11 @@
 - 注
 其实可以创建分支时把分支名命名为 T0001\_XXX 的格式，这样arc会自动关联task
 
+- install
+`go install github.com/ProtossGenius/pgtools/cmd/pickcheck`
+或者老版本 `go get github.com/ProtossGenius/pgtools/cmd/pickcheck`
+
+
 # Catalog
 ---
 [<<< upper page](../README.md)
