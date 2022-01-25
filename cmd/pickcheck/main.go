@@ -16,6 +16,9 @@ func main() {
 	flag.Parse()
 
 	taskList := strings.Split(*tasks, ",")
+	if strings.TrimSpace(*tasks) == "" {
+		taskList = make([]string, 0)
+	}
 
 	for index, val := range taskList {
 		taskList[index] = strings.TrimSpace(val)
