@@ -3,6 +3,7 @@ package pickcheck
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ProtossGenius/SureMoonNet/basis/smn_exec"
 )
@@ -14,10 +15,11 @@ type GitLogInfo struct {
 	Title   string
 	Tasks   string
 	RevCdoe string
+	date    int64
 }
 
-func newInfo() *GitLogInfo {
-	return &GitLogInfo{Author: "", Date: "", Title: "", Tasks: "", RevCdoe: ""}
+func (info *GitLogInfo) LessThan(rhs *GitLogInfo) bool {
+	return info.date < rhs.date
 }
 
 func (info *GitLogInfo) ContainsTask(tasks []string) bool {
@@ -54,7 +56,11 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 	}
 
 	if strings.HasPrefix(line, "Date") {
-		info.Date = line
+		info.Date = strings.TrimSpace(line[5:])
+		date, err := time.ParseInLocation("Mon Jan 02 15:04:05 2006 -0700", info.Date, time.Local)
+		check(err)
+
+		info.date = date.UnixMilli()
 
 		return false
 	}
@@ -78,7 +84,7 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 }
 
 // Check .
-func Check(mainBranch, pickBranch, searchBeginTime string, tasks []string) (lostLogs []*GitLogInfo) {
+func Check(mainBranch, pickBranch, searchBeginTime string, tasks []string) (lostLogs GitLogInfoArray) {
 	mainLogs := GetGitLogInfo(mainBranch, searchBeginTime, tasks)
 	pickLogs := GetGitLogInfo(pickBranch, searchBeginTime, tasks)
 
@@ -117,12 +123,12 @@ func getLogDetails(beginTime string) []*GitLogInfo {
 	check(err)
 
 	result := make([]*GitLogInfo, 0)
-	info := newInfo()
+	info := new(GitLogInfo)
 
 	for _, line := range strings.Split(out, "\n") {
 		if info.Parse(line) {
 			result = append(result, info)
-			info = newInfo()
+			info = new(GitLogInfo)
 			info.Parse(line)
 
 			continue
@@ -146,7 +152,38 @@ func Compare(mainLogs, pickLogs map[string]*GitLogInfo) (lostLogs []*GitLogInfo)
 	return lostLogs
 }
 
-func ShowLogs(logs []*GitLogInfo) {
+type GitLogInfoArray []*GitLogInfo
+
+// Len is the number of elements in the collection.
+func (g GitLogInfoArray) Len() int {
+	return len(g)
+}
+
+// Less reports whether the element with index i
+// must sort before the element with index j.
+//
+// If both Less(i, j) and Less(j, i) are false,
+// then the elements at index i and j are considered equal.
+// Sort may place equal elements in any order in the final result,
+// while Stable preserves the original input order of equal elements.
+//
+// Less must describe a transitive ordering:
+//  - if both Less(i, j) and Less(j, k) are true, then Less(i, k) must be true as well.
+//  - if both Less(i, j) and Less(j, k) are false, then Less(i, k) must be false as well.
+//
+// Note that floating-point comparison (the < operator on float32 or float64 values)
+// is not a transitive ordering when not-a-number (NaN) values are involved.
+// See Float64Slice.Less for a correct implementation for floating-point values.
+func (g GitLogInfoArray) Less(i int, j int) bool {
+	return g[i].LessThan(g[j])
+}
+
+// Swap swaps the elements with indexes i andj.
+func (g GitLogInfoArray) Swap(i int, j int) {
+	g[i], g[j] = g[j], g[i]
+}
+
+func ShowLogs(logs GitLogInfoArray) {
 	for _, log := range logs {
 		fmt.Println("log info detail : ", log)
 	}
