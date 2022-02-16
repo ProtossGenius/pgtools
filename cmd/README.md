@@ -10,6 +10,7 @@
 # SubCatalog
 
 * [\<dir>pickcheck -> pick check 工具](./pickcheck/README.md)
+* [\<dir>pickinfo -> pick详情](./pickinfo/README.md)
 ---
 [<<< upper page](../README.md)
 ---

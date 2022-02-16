@@ -18,6 +18,10 @@ type GitLogInfo struct {
 	date    int64
 }
 
+func (info *GitLogInfo) Show() {
+	fmt.Printf("%s %s %s %s\n", info.RevCdoe[:8], info.Title, info.Author, info.Date)
+}
+
 func (info *GitLogInfo) LessThan(rhs *GitLogInfo) bool {
 	return info.date < rhs.date
 }
@@ -44,7 +48,7 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 			return true
 		}
 
-		info.RevCdoe = line
+		info.RevCdoe = line[7:]
 
 		return false
 	}
@@ -57,7 +61,7 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 
 	if strings.HasPrefix(line, "Date") {
 		info.Date = strings.TrimSpace(line[5:])
-		date, err := time.ParseInLocation("Mon Jan 02 15:04:05 2006 -0700", info.Date, time.Local)
+		date, err := time.ParseInLocation("Mon Jan 2 15:04:05 2006 -0700", info.Date, time.Local)
 		check(err)
 
 		info.date = date.UnixMilli()
@@ -97,13 +101,17 @@ func check(err error) {
 	}
 }
 
+func GitCheckout(branch string) {
+	err := smn_exec.EasyDirExec(".", "git", "checkout", branch)
+	check(err)
+}
+
 func GetGitLogInfo(branch, searchBeginTime string, tasks []string) map[string]*GitLogInfo {
 	if branch == "" {
 		return make(map[string]*GitLogInfo)
 	}
 
-	err := smn_exec.EasyDirExec(".", "git", "checkout", branch)
-	check(err)
+	GitCheckout(branch)
 
 	logDetails := getLogDetails(searchBeginTime)
 
@@ -116,6 +124,21 @@ func GetGitLogInfo(branch, searchBeginTime string, tasks []string) map[string]*G
 	}
 
 	return result
+}
+
+func CurrentBranch() string {
+	out, _, err := smn_exec.DirExecGetOut(".", "git", "status")
+	check(err)
+
+	line := strings.Split(out, "\n")[0]
+
+	const prefix = "On branch "
+
+	if !strings.HasPrefix(line, prefix) {
+		check(fmt.Errorf("[%s] not begin with [%s]", line, prefix))
+	}
+
+	return line[len(prefix):]
 }
 
 func getLogDetails(beginTime string) []*GitLogInfo {
@@ -185,6 +208,6 @@ func (g GitLogInfoArray) Swap(i int, j int) {
 
 func ShowLogs(logs GitLogInfoArray) {
 	for _, log := range logs {
-		fmt.Println("log info detail : ", log)
+		log.Show()
 	}
 }

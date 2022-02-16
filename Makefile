@@ -9,5 +9,6 @@ test:
 
 install:
 	cd cmd/pickcheck && go install
+	cd cmd/pickinfo && go install
 clean:
 
