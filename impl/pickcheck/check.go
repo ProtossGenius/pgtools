@@ -88,9 +88,9 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 }
 
 // Check .
-func Check(mainBranch, pickBranch, searchBeginTime string, tasks []string) (lostLogs GitLogInfoArray) {
-	mainLogs := GetGitLogInfo(mainBranch, searchBeginTime, tasks)
+func Check(mainBranch, pickBranch *string, searchBeginTime string, tasks []string) (lostLogs GitLogInfoArray) {
 	pickLogs := GetGitLogInfo(pickBranch, searchBeginTime, tasks)
+	mainLogs := GetGitLogInfo(mainBranch, searchBeginTime, tasks)
 
 	return Compare(mainLogs, pickLogs)
 }
@@ -102,16 +102,17 @@ func check(err error) {
 }
 
 func GitCheckout(branch string) {
-	err := smn_exec.EasyDirExec(".", "git", "checkout", branch)
+	_, _, err := smn_exec.DirExecGetOut(".", "git", "checkout", branch)
 	check(err)
 }
 
-func GetGitLogInfo(branch, searchBeginTime string, tasks []string) map[string]*GitLogInfo {
-	if branch == "" {
+func GetGitLogInfo(branch *string, searchBeginTime string, tasks []string) map[string]*GitLogInfo {
+	if *branch == "" {
 		return make(map[string]*GitLogInfo)
 	}
 
-	GitCheckout(branch)
+	GitCheckout(*branch)
+	*branch = CurrentBranch()
 
 	logDetails := getLogDetails(searchBeginTime)
 

@@ -29,7 +29,7 @@ func main() {
 		taskList[index] = strings.TrimSpace(val)
 	}
 
-	lostLogs := pickcheck.Check(*mainBranch, *pickBranch, *after, taskList)
+	lostLogs := pickcheck.Check(mainBranch, pickBranch, *after, taskList)
 	fmt.Println("================= lost commits =====================")
 	sort.Sort(lostLogs)
 
