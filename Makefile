@@ -4,7 +4,7 @@ prebuild:
 debug:
 
 qrun:
-	go run cmd/pickcheck/main.go
+	go run cmd/parseresend/parse.go
 test:
 
 install:

@@ -15,7 +15,7 @@ func main() {
 	desc := flag.Bool("desc", false, "if desc, sort logs as desc; or asc")
 	flag.Parse()
 
-	lostLogs := pickcheck.Check(mainBranch, pickBranch, *after, nil)
+	lostLogs := pickcheck.Check(pickBranch, mainBranch, *after, nil)
 	fmt.Println("基于", *mainBranch, "\nbuild", *pickBranch, "\npick\n")
 	sort.Sort(lostLogs)
 

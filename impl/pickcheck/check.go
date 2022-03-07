@@ -88,11 +88,11 @@ func (info *GitLogInfo) Parse(line string) (parseFinish bool) {
 }
 
 // Check .
-func Check(mainBranch, pickBranch *string, searchBeginTime string, tasks []string) (lostLogs GitLogInfoArray) {
-	pickLogs := GetGitLogInfo(pickBranch, searchBeginTime, tasks)
-	mainLogs := GetGitLogInfo(mainBranch, searchBeginTime, tasks)
+func Check(pickBranch, mainBranch *string, searchBeginTime string, tasks []string) (lostLogs GitLogInfoArray) {
+	mainLog := GetGitLogInfo(mainBranch, searchBeginTime, tasks)
+	pickLog := GetGitLogInfo(pickBranch, searchBeginTime, tasks)
 
-	return Compare(mainLogs, pickLogs)
+	return Compare(pickLog, mainLog)
 }
 
 func check(err error) {
@@ -164,11 +164,11 @@ func getLogDetails(beginTime string) []*GitLogInfo {
 	return result
 }
 
-func Compare(mainLogs, pickLogs map[string]*GitLogInfo) (lostLogs []*GitLogInfo) {
-	lostLogs = make([]*GitLogInfo, 0, len(mainLogs))
+func Compare(pickLogs, mainLogs map[string]*GitLogInfo) (lostLogs []*GitLogInfo) {
+	lostLogs = make([]*GitLogInfo, 0, len(pickLogs))
 
-	for key, info := range mainLogs {
-		if _, exist := pickLogs[key]; !exist {
+	for key, info := range pickLogs {
+		if _, exist := mainLogs[key]; !exist {
 			lostLogs = append(lostLogs, info)
 		}
 	}
